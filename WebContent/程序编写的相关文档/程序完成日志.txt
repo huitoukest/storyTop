@@ -1,0 +1,70 @@
+*表示未完成,但是正在或者需要未来完成:日期表示开始或完成日期;
+
+后台功能:
+注册登录: 
+        1.前台注册20151201
+        2.前台登录20151201
+普通用户管理:
+        1.增加用户;
+        2.单/多用户删除用户成功;
+        3.修改用户信息;
+        4.用户的搜索;
+ 
+ 管理员管理:
+        1.增加管理员;
+        2.修改管理员;
+        3.删除管理员;
+ 
+ 小说管理:
+        *未登录的时候,后台连接显示找不到网页的bug;
+        1.小说的搜索_后台;   
+          (1)json_storyStatus的编写;
+          (2)小说的列表展示完成
+          *(3)小说的列表搜索功能;
+          
+          
+         
+物品分类管理:
+        1.tree展示的前后台 ,增加和更新的对话框分离20150222
+        2.物品分类中的增加和更新以及统一异常处理中的.json请求识别为ajax的处理方式20150223
+        3.物品分类的删除完成20150223
+        
+
+        
+主题管理:
+       1.主题管理的增删改基本功能20150226
+       2.主题的条件搜索功能基本完成20150227
+       3.主题功能:成色,加以方式,价格补充20150227
+       
+ 
+ 前台功能:
+ 
+  	 1.前台用户登录检测以及相关的登录和对话完成!20150227             
+           
+后台系统:
+       1.将面向关系的Entity,重写为面向对象的,同时重写相关的方法;
+       *2.留下一个bug,如下:
+       public List<T> find(String hql,Page page) {//拼串的方式
+		if(page==null||page.getRows()==null||page.getPage()==null) return this.find(hql);
+		if(page.getOrder()!=null&&page.getSort()!=null)
+		{ 
+		  return this.find(hql.trim()+" order by "+page.getSort()+" "+page.getOrder(),page.getPage(), page.getRows());
+		}
+		return this.find(hql, page.getPage(), page.getRows());
+	}//这种拼串的方式能够排成正确的排序,但是采用传入参数的方式反而排序无效,但是不报错:
+	public List<T> find(String hql,Page page) {//传入参数的方式
+		if(page==null||page.getRows()==null||page.getPage()==null) return this.find(hql);
+		if(page.getOrder()!=null&&page.getSort()!=null)
+		{ hql=hql.trim()+" order by :BaseDaoImplSort "+page.getOrder();
+		  Map<String,Object> params=new HashMap<String,Object>();
+		  params.put("BaseDaoImplSort", page.getSort());
+		 return this.find(hql, params,page.getPage(), page.getRows());
+		}
+		return this.find(hql, page.getPage(), page.getRows());
+	}
+	   *3.目前后台的增删改都是采用,提交数据到后台,成功后刷新前台datagrid的方式来下显示变化,以后改成更具后台返回的结果,前台自己刷新,以减轻服务器负担;
+	   4.统一异常处理中的普通页面的异常处理完成20150310
+	   5.图片上传的部分在系统的功能基本完成之后完成20150403
+	   6.用户的认证问题等系统基本功能完成之后完成20150407
+	   7.验证码的功能待功能基本完成后完成20150320
+	   8.写Session监听之间,在Session销毁的之后自动的删除无用文件的事件;

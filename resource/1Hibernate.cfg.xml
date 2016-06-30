@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-configuration PUBLIC  
+         "-//Hibernate/Hibernate Configuration DTD 3.0//EN"  
+    "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+ <session-factory> 
+<property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+<property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+<property name="hibernate.connection.url">jdbc:mysql://localhost/story002?useUnicode=true&amp;characterEncoding=UTF-8</property>
+<property name="hibernate.connection.username">root</property>
+<property name="hibernate.connection.password">root</property>
+<property name="jdbc.batch_size">20</property>  
+<property name="connection.autocommit">true</property>  
+<property name="show_sql">true</property>
+<property name="hibernate.format_sql">true</property> 
+<property name="hibernate.hbm2ddl.auto" >update</property>
+<property name="current_session_context_class">thread</property>
+<!--  
+<property name="hibernate.cache.use_second_level_cache">true</property>
+<property name="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory</property>  
+-->
+<!-- 注意,开启二级缓存之后,将ehcache.xml配置好再用-->
+<mapping class="com.tingfeng.model.User" ></mapping>
+<mapping class="com.tingfeng.model.Admin" ></mapping>
+<mapping class="com.tingfeng.model.Category" ></mapping>
+<mapping class="com.tingfeng.model.Topic" ></mapping>
+<mapping class="com.tingfeng.model.Category" ></mapping>
+<mapping class="com.tingfeng.model.TopicImage" ></mapping>
+<mapping class="com.tingfeng.model.Address" ></mapping>
+<mapping class="com.tingfeng.model.Image" ></mapping>
+<mapping class="com.tingfeng.model.ThingSort" ></mapping>
+
+ </session-factory>
+</hibernate-configuration> 

@@ -1,0 +1,41 @@
+关于model编写注意和解释:
+1.html中元素命名,目录_页面名称_空间名称--->比如:admin_index_registDialog;
+2.在bean转换成为json数据的时候方式取出多余的数据:
+  2.1可以在相应的字段上面使用@JSONField(serialize=false),那么此字段就不会被json序列化;
+  2.2可以在将之转换成成为json数据的时候,过滤掉不需要转换的数据;fast可以按照字段,名称,值三种方式来过滤;
+  2.3所有数据通过DTO来和前台以及json转化类相交互,避免和Entity类直接交互;
+  
+
+2.先完成最基本的功能,后续完善:
+  2.1最基本的注册和登陆功能,后续加入更详细的注册信息功能;
+  2.2对于没有完整getter和setter方法的类,是不能够转换成为json数据发送到前台的;
+
+3.由于采用的是Spring来管理事务,所以需要时刻注意写入数据的时候,方法的命名要和自己设定的开启写事务的名称相对应,比如setXX,saveXX,updateXX;
+          如果命名是非写入,但是又在对数据库进行写入操作,那么就会发生不报错,但是数据写入错误,前台无响应,后台执行到某一阶段就奇怪的终止的bug;
+  
+4.关于Hibernate
+  4.1关于查询参数的问题:
+  Map<String, Object> map=new HashMap<String, Object>();
+       正确的方式:
+				map.put("name", "%"+name+"%");
+				userArrayList=(ArrayList<User>) this.getUserDao().find("from User user Where user.name like :name", map);
+      错误的方式:     map.put("name", name);
+				userArrayList=(ArrayList<User>) this.getUserDao().find("from User user Where user.name like %:name%", map);
+				采用错误的方式容易发生的情况就是,数据库和Hibernate不报错,但是就是无响应;
+
+5.调试和测试的时候使用Logger.info(XX);不建议使用System.out.println(XXX);
+6.所有错误和提示信息均可以用抛出异常的方式向前台发送消息,系统捕获异常统一处理,ajax时,同时以Myjson类的结构形式网前台发送信息;
+  非 ajax的时候,同普通网页提示相关错误信息.
+7.关于用户密码的加密问题,分为前端和后台加密;
+前端返回两个参数,一个是密码,另外一个是确定此密码是否已经经过加密;后台通过参数将未加密的密码加密;统一采用md5的方式加密;
+8.前端的tree显示,一律用DTO中的TreeForm来包装发送;
+9.在Dao层尽量处理只涉及此表本身的一些事物,而设计到其他无直接关联的表,或者使用到其他Manager的时候,尽量在controller层来处理事务逻辑!
+10.一般"/admin/"这种url下面只限admin访问,"/user/"下的只是user访问,没有特别说明的,都能够访问,通过参数的不同来返回不同的数据!
+11.Jquery和easyUI只能够单次导入,如果多次导入那么,可以会发生一些异常,比如:cannot read property of undefined validatebox等等的错误;
+12.前台返回的时间,如果后台用的是java.util.Date来接受,那么请注意,正确的格式是2011-2-3 12:22:33这种字符串方式的,如果用了毫秒来标识,如1425115029672,那么后台可能会接收失败!
+13.合理运用BeanUtils,来达到深复制的问题,防止前台发送的数据影响后台!
+14.主题的搜索与显示将会涉及到一些全局的参数,统一用whole_topic_变量名称的方式来作为前台命名,但是后台和相应的controller相对应;
+15.可以利用用户输入的验证码和密码进行前台加密，然后后台验证码验证通过之后进行加密后的密码的验证。
+16.为了防止用户在上传文件之后又取消了发布和文件相关的主题，所以监听用户Session的穿件和销毁，如果在用户的Session销毁的时候检测数据库中保存的图片是否都有了关联，
+      如果没有则删除多余的文件；并且是是在每次接收上传的文件之间都将原来的文件和数据库校验，没有使用的文件进行删除
+17.网页屏幕的宽度全部设置为1280px

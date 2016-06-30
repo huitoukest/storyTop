@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+       http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+       http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd">
+    <!-- 必须启用此配置,不然将无法解析视图,此表示启用annotation支持 -->
+    <mvc:annotation-driven />
+     <mvc:resources mapping="/js/**" location="/js/" />
+     <mvc:resources mapping="/images/**" location="/images/" />
+  <mvc:interceptors>
+         <!--设置拦截的路径
+            <mvc:mapping path="/**" />  
+            -->  
+        <bean class="com.tingfeng.interceptor.MyHandlerInterceptor">
+        </bean>
+  </mvc:interceptors>
+    
+	<!-- 配置jdbc配置文件的位置 -->
+	<context:property-placeholder location="classpath:jdbc.properties" />
+
+	<!-- 配置dbcp数据源dataSource -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="validationQuery" value="SELECT 1" />
+		<property name="testWhileIdle" value="true" />
+		<property name="timeBetweenEvictionRunsMillis" value="3600000" />
+		<property name="minEvictableIdleTimeMillis" value="18000000" />
+		<property name="testOnBorrow" value="true" />
+	</bean>
+<!-- 用于监听器的注入 -->
+<bean id="imagesManager" class="com.tingfeng.manager.ImagesManager"/>
+
+
+	<!-- 整合Hibernate的SessionFactory -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="packagesToScan" value="com.tingfeng.model" /><!--扫描实体文件夹 -->  
+		<property name="dataSource" ref="dataSource" />
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hibernate.format_sql">true</prop>
+				<prop key="hibernate.jdbc.fatch_size">50</prop>
+				<prop key="hibernate.jdbc.batch_size">20</prop>
+				<prop key="current_session_context_class">thread</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- 扫描所有层 -->
+	<context:component-scan base-package="com.tingfeng.**" />
+<!-- 启动mvc的默认支持 -->
+   <!--  
+   <mvc:default-servlet-handler/>
+-->
+<!-- 配置 Hibernate 4 的 transactionManager--> 
+<bean id="transactionManager"  class="org.springframework.orm.hibernate4.HibernateTransactionManager"> 
+     <property name="sessionFactory" ref="sessionFactory" />
+</bean> 
+<!-- spring的切面管理aop支持 --> 
+<aop:config> 
+<!-- 配置aop的切入位置,在哪些方法前切入 --> 
+<aop:pointcut id="daoMethods" expression="execution(* com.tingfeng.controller.*.*(..))" /> 
+<aop:pointcut id="daoMethods2" expression="execution(* com.tingfeng.controller.*.*.*(..))" /> 
+<aop:pointcut id="daoMethods3" expression="execution(* com.tingfeng.system.*.*(..))" /> 
+
+<!-- 配置在切入点干啥子事情,定义了将采用何种拦截操作，这里引用到 txAdvice -->  
+<aop:advisor advice-ref="txAdvice" pointcut-ref="daoMethods" /> 
+<aop:advisor advice-ref="txAdvice" pointcut-ref="daoMethods2" /> 
+<aop:advisor advice-ref="txAdvice" pointcut-ref="daoMethods3" /> 
+
+</aop:config> 
+<!-- 配置具体的advisor行为 --> 
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">  
+        <!-- 匹配相应的名称和行为 -->  
+        <tx:attributes>  
+            <tx:method name="insert*" propagation="REQUIRED" />  
+            <tx:method name="update*" propagation="REQUIRED" />  
+            <tx:method name="edit*" propagation="REQUIRED" />  
+            <tx:method name="save*" propagation="REQUIRED" />  
+            <tx:method name="add*" propagation="REQUIRED" />  
+            <tx:method name="new*" propagation="REQUIRED" />  
+            <tx:method name="set*" propagation="REQUIRED" />  
+            <tx:method name="remove*" propagation="REQUIRED" />  
+            <tx:method name="delete*" propagation="REQUIRED" />  
+            <tx:method name="change*" propagation="REQUIRED" />
+            <tx:method name="modify*" propagation="REQUIRED" />
+            <tx:method name="repair*" propagation="REQUIRED" />
+			<tx:method name="deleteAndRepair*" propagation="REQUIRED" />
+			<tx:method name="*login*" propagation="REQUIRED" />
+			<tx:method name="*logout*" propagation="REQUIRED" />
+			<tx:method name="*recommend*" propagation="REQUIRED"/>
+			<tx:method name="*upload*" propagation="REQUIRED" />
+            <tx:method name="*init*" propagation="REQUIRED" />
+            <tx:method name="*sessionDestroyed*" propagation="REQUIRED" />
+            
+            <tx:method name="get*" propagation="REQUIRED" read-only="true" />  
+            <tx:method name="find*" propagation="REQUIRED" read-only="true" />  
+            <tx:method name="load*" propagation="REQUIRED" read-only="true" />             
+			<tx:method name="search*" propagation="SUPPORTS" read-only="true" />
+			<tx:method name="datagrid*" propagation="SUPPORTS" read-only="true" />
+			<tx:method name="check*" propagation="SUPPORTS" read-only="true" />
+             
+            <tx:method name="*" propagation="REQUIRED" read-only="true" />  
+        </tx:attributes>  
+    </tx:advice>
+    
+    <!-- 自动一异常处理类，以实现统一异常处理 ，原本是class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver"默认，现在继承，然后自定义-->
+    <bean id="exceptionResolver" class="com.tingfeng.exception.CustomSimpleMappingExceptionResolver">
+      <property name="exceptionMappings">   
+        <props>   
+          <prop key="com.tingfeng.exception.SystemException">error/500.jsp</prop>   
+          <prop key="com.tingfeng.exception.DataException">error/errorPage.jsp</prop>
+          <prop key="java.lang.Throwable">error/errorPage.jsp</prop>   
+          <prop key="java.lang.exception">error/500.jsp</prop>             
+       </props>   
+     </property>   
+    </bean>
+    <!-- 文件上传 -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">  
+        <property name="defaultEncoding" value="utf-8"></property>   
+        <property name="maxUploadSize" value="10485760000"></property>  
+        <property name="maxInMemorySize" value="40960"></property>  
+   </bean>  
+                 
+</beans>

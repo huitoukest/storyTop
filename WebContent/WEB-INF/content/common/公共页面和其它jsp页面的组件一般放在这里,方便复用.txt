@@ -1,0 +1,35 @@
+*表示未完成,但是正在完成:日期表示开始日期;
+
+注册登录: 
+        1.完成后台的登录对话框 20150208
+        2.注册框以及后台完成,接着是后台的注册数据检测(用户名不能重复,id不能重复等等); 20150209
+        *3.加入验证码以及其它数据的注册
+        4.普通用户的注册和登陆的对话框分离完成 20150210;
+        5.管理员用户的登陆对话框 20150211
+普通用户管理:
+        1.列表展示和搜索完成 20150211
+    
+    
+后台系统:
+       *1.将面向关系的Entity,重写为面向对象的,同时重写相关的方法;
+       *2.留下一个bug,如下:
+       public List<T> find(String hql,Page page) {//拼串的方式
+		if(page==null||page.getRows()==null||page.getPage()==null) return this.find(hql);
+		if(page.getOrder()!=null&&page.getSort()!=null)
+		{ 
+		  return this.find(hql.trim()+" order by "+page.getSort()+" "+page.getOrder(),page.getPage(), page.getRows());
+		}
+		return this.find(hql, page.getPage(), page.getRows());
+	}//这种拼串的方式能够排成正确的排序,但是采用传入参数的方式反而排序无效,但是不报错:
+	public List<T> find(String hql,Page page) {//传入参数的方式
+		if(page==null||page.getRows()==null||page.getPage()==null) return this.find(hql);
+		if(page.getOrder()!=null&&page.getSort()!=null)
+		{ hql=hql.trim()+" order by :BaseDaoImplSort "+page.getOrder();
+		  Map<String,Object> params=new HashMap<String,Object>();
+		  params.put("BaseDaoImplSort", page.getSort());
+		 return this.find(hql, params,page.getPage(), page.getRows());
+		}
+		return this.find(hql, page.getPage(), page.getRows());
+	}
+	   *3.目前后台的增删改都是采用,提交数据到后台,成功后刷新前台datagrid的方式来下显示变化,以后改成更具后台返回的结果,前台自己刷新,以减轻服务器负担;
+	   
