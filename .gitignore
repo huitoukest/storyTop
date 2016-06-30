@@ -1,7 +1,9 @@
 /WebContent/WEB-INF/lib
+/*
 /build/classes
 /*
+!/build/classes
+/
 !/WebContent/WEB-INF/lib
-/build/classes
-
+/
 
